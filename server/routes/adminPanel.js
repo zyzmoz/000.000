@@ -2,7 +2,7 @@ const router = require('express').Router();
 const Config = require('../models/config');
 
 router.get('/config', (req, res) => {
-  Config.find({}, (err, data) => {
+  Config.findOne({}, (err, data) => {
     if (err) throw err;
     res.send(data);
   });

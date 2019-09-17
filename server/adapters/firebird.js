@@ -1,24 +1,34 @@
 const firebird = require('node-firebird');
+const Config = require('../models/config');
 
+let connection = null;
 
-const options = {
-  host: '127.0.0.1',
-  port: 3050,
-  database: 'E:/sgsuper/dbcomp.fdb',
-  user: 'SYSDBA',
-  password: 'masterkey',
-  role: null,
-  pageSize: 4096
-};
+const connect = async () => {
+  const config = await Config.findOne();
 
-const query = (sql, params = []) => {
-  return new Promise((resolve) => {
-    firebird.attach(options, (err, db) => {
-      db.query(query, params, (err, res) => {
-        resolve(res);
-      });
+  connection = await new Promise(resolve => {
+    firebird.attach(config, (err, db) => {
+      if (err) throw err;
+      resolve(db);
     });
   });
+}
+
+const disconnect = async () => {
+  await connection.detach(err => {
+    if (err) throw err;
+  });
+  connection = null;
+}
+
+const query = async (sql, params = []) => {
+  await connect();
+  return new Promise((resolve) => {
+    connection.query(sql, params, (err, res) => {
+      if (err) throw err;            
+      resolve(res);
+    });
+  });   
 }
 //update
 //insert
